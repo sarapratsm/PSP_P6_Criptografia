@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="../ConsoleServer/ConsoleServer.csproj" Id="b18f7e9e-3740-4d75-bb16-c87932fd3fbb" />
+  <Project Path="../Utils/Utils.csproj" />
+  <Project Path="Client.csproj" />
+</Solution>

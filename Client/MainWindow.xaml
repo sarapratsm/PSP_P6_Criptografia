@@ -1,0 +1,100 @@
+﻿<Window x:Class="Client.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Client"
+        mc:Ignorable="d"
+        Title="Xat" Height="600" Width="900"
+        Background="LightSteelBlue">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                BorderThickness="0,0,0,1">
+            <Grid Margin="16,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Ellipse Grid.Column="0"
+                         Width="10" Height="10"                         
+                         VerticalAlignment="Center"
+                         Margin="0,0,10,0"/>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtNickname"
+                               FontSize="15"/>
+                    <TextBlock x:Name="TxtEstatConnexio"
+                               Text="Connectant..."/>
+                </StackPanel>
+
+                <!-- Badge de xifrat -->
+                <Border Grid.Column="2"
+                        VerticalAlignment="Center"
+                        Margin="0,0,12,0"
+                        x:Name="BadgeXifratPanel"
+                        Visibility="Collapsed">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🔒 "
+                                   FontSize="11"/>
+                        <TextBlock x:Name="TxtMetodeXifrat"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   />
+                    </StackPanel>
+                </Border>
+
+                <Button Grid.Column="3"
+                        x:Name="BtnDesconnectar"
+                        Content="Desconnectar"
+                        Width="120"
+                        Click="BtnDesconnectar_Click"
+                        VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <ScrollViewer Grid.Row="1"
+                      x:Name="ScrollMissatges"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Padding="16,12"
+                      Margin="15"
+                      Background="{StaticResource ChatBackground}">
+            <StackPanel x:Name="PanellMissatges"
+                        Margin="0,0,8,0"/>
+        </ScrollViewer>
+
+        <Border Grid.Row="2"           
+                BorderThickness="0,1,0,0"
+                Padding="16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0"
+                         x:Name="InputMissatge"
+                         MaxLength="500"
+                         IsEnabled="False"
+                         KeyDown="InputMissatge_KeyDown"/>
+
+                <Button Grid.Column="2"
+                        x:Name="BtnEnviar"
+                        Content="➤"
+                        IsEnabled="False"
+                        Click="BtnEnviar_Click" 
+                        />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
