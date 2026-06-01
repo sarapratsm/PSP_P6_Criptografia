@@ -25,16 +25,25 @@ namespace Client
             TxtMetodeXifrat.Text = ConnexioClient.Instancia.Algorisme.ToString();
             BadgeXifratPanel.Visibility = Visibility.Visible;
 
-            // Habilitar controls
-            InputMissatge.IsEnabled = true;
-            BtnEnviar.IsEnabled = true;
+           
             InputMissatge.Focus();
 
-            // Arrencar el loop de recepció en background
+            InicialitzarEmojis();
+            InicialitzarControls();
+
+            //loop escolta
             _ = Task.Run(EscoltarMissatgesAsync);
         }
-        #endregion
 
+        private void InicialitzarControls()
+        {
+            //metode inútil però és una bona pràctica
+            InputMissatge.IsEnabled = true;
+            BtnEnviar.IsEnabled = true;
+            BtnEmoji.IsEnabled = true;
+        }
+        #endregion
+        
         #region Recepció de missatges
         private async Task EscoltarMissatgesAsync()
         {
@@ -71,6 +80,46 @@ namespace Client
 
             // Scroll automàtic al final
             ScrollMissatges.ScrollToBottom();
+        }
+        #endregion
+
+        #region Emojis
+        private static readonly string[] Emojis =
+        {
+            "😀","😂","😍","🥰","😎","😢","😡","🤔","👍","👎",
+            "❤️","🔥","✅","⭐","🎉","🙏","💪","🤣","😊","🥳",
+            "😅","😱","🤩","😴","🤗","💀","🐱","🐶","🍕","☕"
+        };
+
+        private void InicialitzarEmojis()
+        {
+            foreach (string emoji in Emojis)
+            {
+                var btn = new Button
+                {
+                    Content = emoji,
+                    FontSize = 24,
+                    Width = 50,
+                    Height = 50,
+                    Margin = new Thickness(2),
+                    Background = System.Windows.Media.Brushes.Transparent,
+                    BorderThickness = new Thickness(0),
+                    Cursor = System.Windows.Input.Cursors.Hand
+                };
+                btn.Click += (_, _) =>
+                {
+                    InputMissatge.Text += emoji;
+                    InputMissatge.CaretIndex = InputMissatge.Text.Length;
+                    PopupEmoji.IsOpen = false;
+                    InputMissatge.Focus();
+                };
+                PanellEmojis.Children.Add(btn);
+            }
+        }
+
+        private void BtnEmoji_Click(object sender, RoutedEventArgs e)
+        {
+            PopupEmoji.IsOpen = !PopupEmoji.IsOpen;
         }
         #endregion
 

@@ -72,28 +72,58 @@
                         Margin="0,0,8,0"/>
         </ScrollViewer>
 
-        <Border Grid.Row="2"           
+        <Border Grid.Row="2"
                 BorderThickness="0,1,0,0"
                 Padding="16,12">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="4"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBox Grid.Column="0"
+                <!-- Botó emoji + Popup -->
+                <Button Grid.Column="0"
+                        x:Name="BtnEmoji"
+                        Content="😊"
+                        FontSize="18"
+                        Width="auto" Height="auto"
+                        IsEnabled="False"
+                        Click="BtnEmoji_Click"/>
+
+                <Popup x:Name="PopupEmoji"
+                       PlacementTarget="{Binding ElementName=BtnEmoji}"
+                       Placement="Top"
+                       StaysOpen="False">
+                    <Border Background="White" BorderBrush="#EAEAEA" BorderThickness="1" CornerRadius="8" Padding="8">
+                        <WrapPanel Width="320" x:Name="PanellEmojis"/>
+                    </Border>
+                </Popup>
+
+                <!-- Botó fitxer -->
+                <Button Grid.Column="2"
+                        x:Name="BtnFitxer"
+                        Content="📎"
+                        FontSize="18"
+                        Width="auto" Height="auto"
+                        IsEnabled="False"
+                        Click="BtnFitxer_Click"/>
+
+                <TextBox Grid.Column="4"
                          x:Name="InputMissatge"
                          MaxLength="500"
                          IsEnabled="False"
                          KeyDown="InputMissatge_KeyDown"/>
 
-                <Button Grid.Column="2"
+                <Button Grid.Column="6"
                         x:Name="BtnEnviar"
                         Content="➤"
                         IsEnabled="False"
-                        Click="BtnEnviar_Click" 
-                        />
+                        Click="BtnEnviar_Click"/>
             </Grid>
         </Border>
     </Grid>

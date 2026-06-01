@@ -9,5 +9,7 @@ namespace Utils.Tcp
         public string Contingut { get; init; } = string.Empty;
         public AlgorismeSimetric? XifratTriat { get; init; }
         public string? DadesClauCriptografica { get; init; }
+        /// <summary> Nom del fitxer (només en paquets de tipus FILE). </summary>
+        public string? NomFitxer { get; init; }
     }
 }

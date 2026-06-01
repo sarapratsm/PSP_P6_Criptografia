@@ -137,6 +137,12 @@ namespace ConsoleServer
 
                     await BroadcastAsync(missatgeFormatat);
                 }
+
+                if (paquet.Tipus == "FILE")
+                {
+                    Console.WriteLine($"    [Fitxer] {_nick} envia: {paquet.NomFitxer}");
+                    await BroadcastFitxerAsync(paquet);
+                }
             }
         }
         #endregion
@@ -157,6 +163,33 @@ namespace ConsoleServer
             foreach (var client in copia)
             {
                 try { await client.EnviarMissatgeXifratAsync(missatgeClar); }
+                catch { }
+            }
+        }
+
+        private async Task BroadcastFitxerAsync(PaquetComunicacio paquetOriginal)
+        {
+            // El fitxer ja ve xifrat amb la clau del emissor.
+            // El servidor desxifra i re-xifra per cada client destinatari.
+            byte[] xifrat = Convert.FromBase64String(paquetOriginal.Contingut);
+            byte[] clar = _xifrador.Desxifrar(xifrat, _clauSimetrica);
+
+            List<ClientHandler> copia;
+            lock (_lock) { copia = new List<ClientHandler>(_clientsActius); }
+
+            foreach (var client in copia)
+            {
+                try
+                {
+                    byte[] reXifrat = client._xifrador.Xifrar(clar, client._clauSimetrica);
+                    await client.EnviarPaquetAsync(new PaquetComunicacio
+                    {
+                        Tipus = "FILE",
+                        Nickname = _nick,
+                        NomFitxer = paquetOriginal.NomFitxer,
+                        Contingut = Convert.ToBase64String(reXifrat)
+                    });
+                }
                 catch { }
             }
         }
