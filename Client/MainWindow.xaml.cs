@@ -71,9 +71,24 @@ namespace Client
                         string nick = paquet.Nickname;
                         Dispatcher.Invoke(() => RebreFitxer(nick, nomFitxer, raw));
                     }
+
+                    if (paquet.Tipus == "MEMBERS")
+                    {
+                        byte[] xifrat = Convert.FromBase64String(paquet.Contingut);
+                        byte[] raw = ConnexioClient.Instancia.Xifrador!.Desxifrar(xifrat, ConnexioClient.Instancia.ClauSimetrica);
+                        string[] membres = Encoding.UTF8.GetString(raw).Split(',', StringSplitOptions.RemoveEmptyEntries);
+                        Dispatcher.Invoke(() => ActualitzarMembres(membres));
+                    }
                 }
             }
             catch { }
+        }
+
+        private void ActualitzarMembres(string[] membres)
+        {
+            LlistaMembres.Items.Clear();
+            foreach (string m in membres)
+                LlistaMembres.Items.Add(m);
         }
 
         private void AfegirMissatge(string text)
@@ -236,6 +251,12 @@ namespace Client
             if (e.Key == Key.Enter) await EnviarMissatgeAsync();
         }
 
+        //Si el client tanca la finestra a las bravas també enviem el missatge de desconnexio.
+        private async Task Window_ClosingAsync(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            await DesconnectarAsync();
+        }
+
         private async Task EnviarMissatgeAsync()
         {
             string message = InputMissatge.Text.Trim();
@@ -254,8 +275,6 @@ namespace Client
             InputMissatge.Clear();
         }
         #endregion
-
-
 
         #region Transport
         private async Task EnviarPaquetAsync(PaquetComunicacio paquet)
@@ -291,6 +310,7 @@ namespace Client
             return total;
         }
         #endregion
+
 
     }
 }

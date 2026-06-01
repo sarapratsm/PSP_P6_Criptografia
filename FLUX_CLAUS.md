@@ -15,9 +15,9 @@ SERVIDOR                                    CLIENT
    │     · nClients connectats                 │
    │     · clauPublicaRSA          (en clar ✅) │
    │                                           │
-   │          [client genera clauSimetrica]     │
-   │          [DES → 8 bytes / RC4 → 16 bytes] │
-   │          [xifra amb clauPublicaRSA 🔒]     │
+   │     [client genera clauSimetrica pròpia]  │
+   │     [DES → 8 bytes / RC4 → 16 bytes]      │
+   │     [xifra amb clauPublicaRSA 🔒]          │
    │                                           │
    │←────────── OK ────────────────────────────│  clau xifrada
    │     · clauSimetrica xifrada amb RSA 🔒     │
@@ -31,9 +31,9 @@ SERVIDOR                                    CLIENT
 ## Propietats del disseny
 
 - La clau simètrica **mai** viatja en clar per la xarxa.
-- Cada client té la **seva pròpia clau simètrica** → el servidor xifra cada missatge amb la clau del destinatari.
+- **Cada client té la seva pròpia clau simètrica** → el servidor desxifra i re-xifra per cada destinatari en el broadcast.
 - **RSA** s'usa únicament durant la connexió inicial per transportar la clau simètrica de forma segura.
-- **DES / RC4** xifra tots els missatges del xat un cop establerta la connexió.
+- **DES / RC4** xifra tots els missatges i fitxers del xat.
 
 ## Responsabilitats per actor
 
@@ -44,9 +44,25 @@ SERVIDOR                                    CLIENT
 | Envia clau pública RSA | ✅ Al NEGOTIATE | ❌ |
 | Xifra clau simètrica amb RSA | ❌ | ✅ Abans d'enviar OK |
 | Desxifra clau simètrica amb RSA | ✅ En rebre OK | ❌ |
-| Xifra missatges (xat) | ❌ | ✅ Amb la seva clau |
-| Desxifra i re-xifra per broadcast | ✅ Per a cada destinatari | ❌ |
+| Xifra missatges/fitxers | ✅ (re-xifra per broadcast) | ✅ Amb la seva clau |
 
-## Per què no compartim una clau simètrica única?
+## Flux de missatges i fitxers (post-negociació)
 
-Compartir una sola clau per a tots els clients simplificaria el broadcast, però implicaria enviar-la en clar del servidor al client (el servidor l'hauria de generar i enviar). L'enunciat exigeix que **la clau viatgi sempre xifrada**, cosa que obliga que el client la generi i l'enviï ell mateix.
+```
+CLIENT A                   SERVIDOR                  CLIENT B
+   │                          │                          │
+   │── MESSAGE (xifrat A) ───→│                          │
+   │                    desxifra (clau A)                │
+   │                    re-xifra (clau B)                │
+   │                          │── MESSAGE (xifrat B) ───→│
+   │                          │                          │
+   │── FILE (xifrat A) ──────→│                          │
+   │                    desxifra (clau A)                │
+   │                    re-xifra (clau B)                │
+   │                          │── FILE (xifrat B) ──────→│
+   │                          │    NomFitxer inclòs      │
+```
+
+## Per què cada client té clau diferent?
+
+L'enunciat exigeix que la clau **mai viatgi en clar**. Si el servidor generés una clau única per a tots, l'hauria d'enviar al client d'alguna manera segura — però per fer-ho necessitaria la clau pública RSA del client (que no té). La solució és que **el client generi la seva pròpia clau** i l'enviï xifrada al servidor.

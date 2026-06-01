@@ -14,6 +14,14 @@ namespace ConsoleServer
         private static readonly List<string> _historial = new();
         private static readonly object _lock = new();
         private const int MAX_HISTORIAL = 20;
+        private static readonly string _fitxerLog = $"server_{DateTime.Now:yyyyMMdd_HHmmss}.log";
+
+        private static void Log(string missatge)
+        {
+            string linia = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {missatge}";
+            Console.WriteLine(linia);
+            File.AppendAllText(_fitxerLog, linia + Environment.NewLine);
+        }
         #endregion
 
         #region Estat individual del client
@@ -25,6 +33,7 @@ namespace ConsoleServer
         private readonly AlgorismeSimetric _algorisme;
         private byte[] _clauSimetrica = Array.Empty<byte>();
         private string _nick = string.Empty;
+        public string Nick => _nick;  // Per construir la llista de membres
         #endregion
 
         #region Constructor
@@ -52,19 +61,20 @@ namespace ConsoleServer
             {
                 if (!await NegociarAsync())
                 {
-                    Console.WriteLine($"[-] Negociació fallida. Tancant connexió.");
+                    Log($"[-] Negociació fallida. Tancant connexió.");
                     return;
                 }
 
                 lock (_lock) { _clientsActius.Add(this); }
                 await EnviarHistorialAsync();
-                Console.WriteLine($"[✓] {_nick} al xat. Clients: {_clientsActius.Count}");
+                await BroadcastMembresAsync();
+                Log($"[✓] {_nick} al xat. Clients: {_clientsActius.Count}");
 
                 await LlegirMissatgesAsync();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Error] {_nick}: {ex.Message}");
+                Log($"[Error] {_nick}: {ex.Message}");
             }
             finally
             {
@@ -79,7 +89,7 @@ namespace ConsoleServer
             var connect = await LlegirPaquetAsync();
             if (connect?.Tipus != "CONNECT") return false;
             _nick = connect.Nickname;
-            Console.WriteLine($"    Nick: {_nick}");
+            Log($"    Nick: {_nick}");
 
             int nClients;
             lock (_lock) { nClients = _clientsActius.Count; }
@@ -97,7 +107,7 @@ namespace ConsoleServer
 
             if (string.IsNullOrEmpty(resposta.DadesClauCriptografica))
             {
-                Console.WriteLine($"[!] {_nick} no ha enviat la clau simètrica.");
+                Log($"[!] {_nick} no ha enviat la clau simètrica.");
                 return false;
             }
 
@@ -105,7 +115,7 @@ namespace ConsoleServer
                 Convert.FromBase64String(resposta.DadesClauCriptografica),
                 _clauPrivadaRSA
             );
-            Console.WriteLine($"    Clau simètrica rebuda ({_clauSimetrica.Length} bytes).");
+            Log($"    Clau simètrica rebuda ({_clauSimetrica.Length} bytes).");
 
             return true;
         }
@@ -122,11 +132,11 @@ namespace ConsoleServer
                 if (paquet.Tipus == "MESSAGE")
                 {
                     byte[] xifrat = Convert.FromBase64String(paquet.Contingut);
-                    byte[] clar = _xifrador.Desxifrar(xifrat, _clauSimetrica);
-                    string text = Encoding.UTF8.GetString(clar);
+                    byte[] raw = _xifrador.Desxifrar(xifrat, _clauSimetrica);
+                    string text = Encoding.UTF8.GetString(raw);
 
                     string missatgeFormatat = $"[{DateTime.Now:HH:mm:ss}] {_nick}: {text}";
-                    Console.WriteLine($"    {missatgeFormatat}");
+                    Log($"    {missatgeFormatat}");
 
                     lock (_lock)
                     {
@@ -140,7 +150,7 @@ namespace ConsoleServer
 
                 if (paquet.Tipus == "FILE")
                 {
-                    Console.WriteLine($"    [Fitxer] {_nick} envia: {paquet.NomFitxer}");
+                    Log($"    [Fitxer] {_nick} envia: {paquet.NomFitxer}");
                     await BroadcastFitxerAsync(paquet);
                 }
             }
@@ -209,7 +219,34 @@ namespace ConsoleServer
         {
             lock (_lock) { _clientsActius.Remove(this); }
             _tcpClient.Close();
-            Console.WriteLine($"[-] {_nick} desconnectat. Clients: {_clientsActius.Count}");
+            Log($"[-] {_nick} desconnectat. Clients: {_clientsActius.Count}");
+            _ = BroadcastMembresAsync();
+        }
+
+        private async Task BroadcastMembresAsync()
+        {
+            string llistaMembres;
+            List<ClientHandler> copia;
+            lock (_lock)
+            {
+                llistaMembres = string.Join(",", _clientsActius.Select(c => c._nick));
+                copia = new List<ClientHandler>(_clientsActius);
+            }
+
+            foreach (var client in copia)
+            {
+                try
+                {
+                    byte[] bytes = Encoding.UTF8.GetBytes(llistaMembres);
+                    byte[] xifrat = client._xifrador.Xifrar(bytes, client._clauSimetrica);
+                    await client.EnviarPaquetAsync(new PaquetComunicacio
+                    {
+                        Tipus = "MEMBERS",
+                        Contingut = Convert.ToBase64String(xifrat)
+                    });
+                }
+                catch { }
+            }
         }
         #endregion
 

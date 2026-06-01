@@ -8,6 +8,11 @@
         Title="Xat" Height="600" Width="900"
         Background="LightSteelBlue">
     <Grid Margin="10">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="8"/>
+            <ColumnDefinition Width="170"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -125,6 +130,18 @@
                         IsEnabled="False"
                         Click="BtnEnviar_Click"/>
             </Grid>
+        </Border>
+
+        <!-- Panell de membres (columna dreta, totes les files) -->
+        <Border Grid.Column="2" Grid.Row="0" Grid.RowSpan="3"
+                BorderBrush="#EAEAEA" BorderThickness="1,0,0,0"
+                Padding="8">
+            <StackPanel>
+                <TextBlock Text="👥 Connectats" FontWeight="SemiBold" Margin="0,0,0,8"/>
+                <ListBox x:Name="LlistaMembres"
+                         BorderThickness="0"
+                         Background="Transparent"/>
+            </StackPanel>
         </Border>
     </Grid>
 </Window>
