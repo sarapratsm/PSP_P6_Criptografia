@@ -10,7 +10,7 @@
     <SolidColorBrush x:Key="BubbleIncoming"      Color="#F0F0F0"/>
     <SolidColorBrush x:Key="BubbleOutgoing"      Color="#E3F2FD"/>
     <SolidColorBrush x:Key="DividerColor"        Color="#EAEAEA"/>
-    <SolidColorBrush x:Key="AccentColor"         Color="#0078D4"/>
+    <SolidColorBrush x:Key="AccentColor"         Color="CornflowerBlue"/>
 
     <FontFamily x:Key="AppFont">Segoe UI, Helvetica, Arial, sans-serif</FontFamily>
 

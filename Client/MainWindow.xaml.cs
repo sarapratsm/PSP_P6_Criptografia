@@ -25,7 +25,7 @@ namespace Client
             TxtMetodeXifrat.Text = ConnexioClient.Instancia.Algorisme.ToString();
             BadgeXifratPanel.Visibility = Visibility.Visible;
 
-           
+
             InputMissatge.Focus();
 
             InicialitzarEmojis();
@@ -37,13 +37,14 @@ namespace Client
 
         private void InicialitzarControls()
         {
-            //metode inútil però és una bona pràctica
+            //metode super inutil pero bona practica
             InputMissatge.IsEnabled = true;
             BtnEnviar.IsEnabled = true;
             BtnEmoji.IsEnabled = true;
+            BtnFitxer.IsEnabled = true;
         }
         #endregion
-        
+
         #region Recepció de missatges
         private async Task EscoltarMissatgesAsync()
         {
@@ -57,11 +58,18 @@ namespace Client
                     if (paquet.Tipus == "MESSAGE")
                     {
                         byte[] xifrat = Convert.FromBase64String(paquet.Contingut);
-                        byte[] clar = ConnexioClient.Instancia.Xifrador!.Desxifrar(xifrat, ConnexioClient.Instancia.ClauSimetrica);
-                        string text = Encoding.UTF8.GetString(clar);
-
-                        // Dispatcher.Invoke pq estem en un fil i no podem tocar la UI directament
+                        byte[] raw = ConnexioClient.Instancia.Xifrador!.Desxifrar(xifrat, ConnexioClient.Instancia.ClauSimetrica);
+                        string text = Encoding.UTF8.GetString(raw);
                         Dispatcher.Invoke(() => AfegirMissatge(text));
+                    }
+
+                    if (paquet.Tipus == "FILE" && !string.IsNullOrEmpty(paquet.NomFitxer))
+                    {
+                        byte[] xifrat = Convert.FromBase64String(paquet.Contingut);
+                        byte[] raw = ConnexioClient.Instancia.Xifrador!.Desxifrar(xifrat, ConnexioClient.Instancia.ClauSimetrica);
+                        string nomFitxer = paquet.NomFitxer;
+                        string nick = paquet.Nickname;
+                        Dispatcher.Invoke(() => RebreFitxer(nick, nomFitxer, raw));
                     }
                 }
             }
@@ -78,7 +86,79 @@ namespace Client
             };
             PanellMissatges.Children.Add(bloc);
 
-            // Scroll automàtic al final
+            // scroll automàtic al final
+            ScrollMissatges.ScrollToBottom();
+        }
+        #endregion
+
+        #region Fitxers
+        private const long MAX_MIDA_FITXER = 10 * 1024 * 1024; // 10 MB
+
+        private async void BtnFitxer_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Selecciona un fitxer per enviar"
+            };
+            if (dialog.ShowDialog() != true) return;
+
+            var info = new System.IO.FileInfo(dialog.FileName);
+            if (info.Length > MAX_MIDA_FITXER)
+            {
+                MessageBox.Show($"El fitxer és massa gran. Màxim: 10 MB.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            byte[] bytes = await System.IO.File.ReadAllBytesAsync(dialog.FileName);
+            byte[] xifrat = ConnexioClient.Instancia.Xifrador!.Xifrar(bytes, ConnexioClient.Instancia.ClauSimetrica);
+
+            await EnviarPaquetAsync(new PaquetComunicacio
+            {
+                Tipus = "FILE",
+                Nickname = ConnexioClient.Instancia.Username,
+                NomFitxer = info.Name,
+                Contingut = Convert.ToBase64String(xifrat)
+            });
+
+            AfegirMissatge($"📎 Has enviat el fitxer: {info.Name}");
+        }
+
+        private void RebreFitxer(string nick, string nomFitxer, byte[] bytes)
+        {
+            // Creem una targeta al xat amb botó de desar
+            // El closure captura 'bytes' i 'nomFitxer' per quan l'usuari decideixi desar
+            var targeta = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 4) };
+
+            var lblFitxer = new TextBlock
+            {
+                Text = $"📎 {nick} ha enviat: {nomFitxer}",
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 10, 0)
+            };
+
+            var btnDesar = new Button
+            {
+                Content = "💾 Desar",
+                Padding = new Thickness(8, 4, 8, 4)
+            };
+            btnDesar.Click += (_, _) =>
+            {
+                /*els bytes del document viuen en memoria mentre el client esta obert.*/
+                var dialog = new Microsoft.Win32.SaveFileDialog
+                {
+                    Title = "Guardar fitxer rebut",
+                    FileName = nomFitxer
+                };
+                if (dialog.ShowDialog() != true) return;
+
+                System.IO.File.WriteAllBytes(dialog.FileName, bytes);
+                //lblFitxer.Text = $"✅ Desat: {nomFitxer}";
+                //btnDesar.IsEnabled = false; //crec que prefereixo poder descarregar-lo de nou...
+            };
+
+            targeta.Children.Add(lblFitxer);
+            targeta.Children.Add(btnDesar);
+            PanellMissatges.Children.Add(targeta);
             ScrollMissatges.ScrollToBottom();
         }
         #endregion
@@ -133,7 +213,7 @@ namespace Client
         {
             try
             {
-                // Avisem el servidor que ens anem
+                // avisem el servidor que ens anem
                 await EnviarPaquetAsync(new PaquetComunicacio { Tipus = "BYE" });
             }
             catch { }
