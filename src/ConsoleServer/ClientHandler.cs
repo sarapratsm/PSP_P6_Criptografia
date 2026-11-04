@@ -12,9 +12,9 @@ namespace ConsoleServer
         #region Estat compartit (static)
         private static readonly List<ClientHandler> _clientsActius = new();
         private static readonly List<string> _historial = new();
-        private static readonly object _lock = new();
+        private static readonly object _lock = new(); // Per evitar condicions de carrera en accedir a _clientsActius i _historial
         private const int MAX_HISTORIAL = 20;
-        private static readonly string _fitxerLog = $"server_{DateTime.Now:yyyyMMdd_HHmmss}.log";
+        private static readonly string _fitxerLog = $"server_{DateTime.Now:yyyyMMdd_HHmmss}.log"; // Nom del fitxer de log amb timestamp. Requisit de la pràctica.
 
         private static void Log(string missatge)
         {

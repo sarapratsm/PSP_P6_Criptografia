@@ -17,7 +17,8 @@ namespace ConsoleServer
 
             while (true)
             {
-                Console.Write($"Selecciona algorisme ({opcions}): ");
+                //Accepta el nom de l'algoritme o la seva posició (començant per 0)
+                Console.Write($"Selecciona l'algorisme de xifrat simètric que haurà de generar el client ({opcions}): ");
                 string? entrada = Console.ReadLine();
                 if (Enum.TryParse(entrada, ignoreCase: true, out algorisme)) break;
                 Console.WriteLine("Opció no vàlida. Torna-ho a intentar.\n");
@@ -29,7 +30,7 @@ namespace ConsoleServer
             #endregion
 
             #region Inici del servidor TCP
-            TcpListener listener = new TcpListener(IPAddress.Any, ServerInfo.Port);
+            TcpListener listener = new TcpListener(IPAddress.Any, ServerInfo.Port); //Any = accepta connexions de qualsevol IP
             listener.Start();
             Console.WriteLine($"\n[OK] Servidor iniciat al port {ServerInfo.Port}. Algorisme: {algorisme}");
             Console.WriteLine("Esperant clients...\n");

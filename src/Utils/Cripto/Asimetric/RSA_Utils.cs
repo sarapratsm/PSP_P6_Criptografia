@@ -10,7 +10,7 @@ namespace Utils.Cripto.Asimetric
     public class RSA_Utils
     {
         /// <summary>
-        /// Genera un parell de claus RSA de 2048 bits.
+        /// Genera un parell de claus RSA aleatories de 2048 bits en cada sessió.
         /// </summary>
         /// <returns>
         /// Tupla amb (clauPublica, clauPrivada) en format XML.
