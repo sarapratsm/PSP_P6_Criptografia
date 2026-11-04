@@ -222,6 +222,9 @@ El servidor mantiene un historial de los últimos 20 mensajes que se envía a ca
 
 Desarrollado como proyecto académico de comunicaciones seguras y criptografía aplicada.
 
+**Autor:** Sara Prats Morales 
+**LinkedIn:** [LinkedIn](https://www.linkedin.com/in/sara-prats-morales/)
+
 ---
 
 *Si encuentra algún problema o tiene sugerencias, abra un issue en el repositorio.*
