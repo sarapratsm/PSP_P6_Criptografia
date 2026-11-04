@@ -6,14 +6,14 @@ namespace Client.Dades
     public class ConnexioClient
     {
         #region Singleton
-        public static ConnexioClient Instancia { get; } = new();
-        private ConnexioClient() { }
+        public static ConnexioClient Instancia { get; } = new(); // Patró Singleton: només hi pot haver una instància de ConnexioClient a l'aplicació (1 unic socket connectat a la vegada).
+        private ConnexioClient() { } // Constructor privat per evitar que es creïn més instàncies
         #endregion
 
         #region Estat de connexió
-        public TcpClient? TcpClient { get; private set; }
-        public NetworkStream? Stream { get; private set; }
-        public bool EstaConnectat => TcpClient?.Connected ?? false;
+        public TcpClient? TcpClient { get; private set; } // Socket TCP que representa la connexió amb el servidor. Només es pot llegir i escriure mentre estigui connectat.
+        public NetworkStream? Stream { get; private set; } // Stream de dades del socket TCP. Només es pot llegir i escriure mentre TcpClient estigui connectat.
+        public bool EstaConnectat => TcpClient?.Connected ?? false; // Retorna true si TcpClient no és null i està connectat, false en cas contrari.
         #endregion
 
         #region Dades del client
