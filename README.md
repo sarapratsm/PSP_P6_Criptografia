@@ -1,7 +1,7 @@
 # 🔐 Chat Cifrado P2P (Servidor-Cliente)
 
-![CFGS DAM](https://img.shields.io/badge/CFGS-DAM-green)
-![PSP](https://img.shields.io/badge/assignatura-PSP-teal)
+![CFGS DAM](https://img.shields.io/badge/CFGS-Desenvolupament%20d%27Aplicacions%20Multiplataforma%20%28DAM%29-green)
+![PSP](https://img.shields.io/badge/assignatura-Programaci%C3%B3%20de%20Serveis%20i%20Processos-teal)
 
 Sistema de chat multiplaza con cifrado híbrido (RSA + DES/RC4) desarrollado en .NET 10 y WPF. Cada cliente genera su propia clave simétrica y la intercambia de forma segura mediante cifrado asimétrico RSA durante el handshake inicial.
 
